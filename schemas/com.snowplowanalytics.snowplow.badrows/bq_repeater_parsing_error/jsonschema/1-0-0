@@ -1,9 +1,9 @@
 {
   "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
-  "description": "Schema for storage loader errors with unknown data, e.g. invalid enriched event",
+  "description": "Schema for bad rows related with parsing failed insert payload to enriched event in BigQuery Repeater",
   "self": {
     "vendor": "com.snowplowanalytics.snowplow.badrows",
-    "name": "loader_parsing_error",
+    "name": "bq_repeater_parsing_error",
     "format": "jsonschema",
     "version": "1-0-0"
   },
@@ -11,13 +11,24 @@
   "properties": {
     "payload": {
       "type": "string",
-      "description": "Data blob which was not recognized as an enriched event by the storage loader"
+      "description": "Data blob which was not recognized as an enriched event by the BigQuery Repeater"
     },
     "failure": {
-      "type": "array",
-      "description": "Errors that happened when not recognizing the event as an enriched event",
-      "items": {
-        "type": "string"
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Error message"
+        },
+        "location": {
+          "type": "array",
+          "description": "Location on JSON object where error occured, location path is represented as array of keys",
+          "items": { 
+            "type": "string"
+          }
+        },
+        "required": ["message", "location"],
+        "additionalProperties": false
       }
     },
     "processor": {

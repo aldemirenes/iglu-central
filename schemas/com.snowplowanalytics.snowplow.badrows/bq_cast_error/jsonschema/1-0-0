@@ -1,9 +1,9 @@
 {
   "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
-  "description": "Schema for Iglu related errors which could be during validation or schema lookup",
+  "description": "Schema for errors which occurs when trying to turn JSON value into BigQuery-compatible row",
   "self": {
     "vendor": "com.snowplowanalytics.snowplow.badrows",
-    "name": "loader_iglu_error",
+    "name": "bq_cast_error",
     "format": "jsonschema",
     "version": "1-0-0"
   },
@@ -11,109 +11,98 @@
   "properties": {
     "failure": {
       "type": "array",
-      "description": "List of errors taken during a validation or schema lookup with Iglu",
+      "description": "List of error info objects which are taken during casting process of all the self describing entities in the event",
       "items": {
         "type": "object",
         "properties": {
-          "schema": {
+          "data": {
+            "type": "object",
+            "description": "Data which tried to be casted during error"
+          },
+          "schemaKey": {
             "type": "string",
-            "description": "Key of the schema which is tried to be fetched",
+            "description": "Key of schema which is Ddl schema for row is created",
             "pattern": "^iglu:[a-zA-Z0-9-_.]+/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/[1-9]+-[0-9]+-[0-9]+$"
           },
-          "error": {
-            "anyOf": [
-              {
-                "description": "Problem during schema resolution, missing schema or internal error",
-                "properties": {
-                  "error": {
-                    "enum": ["ResolutionError"]
-                  },
-                  "lookupHistory": {
-                    "description": "Set of all traversed repositories with their failures",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
+          "errors": {
+            "type": "array",
+            "description": "Error objects from SchemaDDL which is the library where cast operation is done",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "Value doesn't match expected type",
+                  "properties": {
+                    "wrongType": {
                       "type": "object",
                       "properties": {
-                        "repository": {
-                          "description": "Repository name from resolver config",
-                          "type": "string"
+                        "value": { 
+                          "type": "object",
+                          "description": "Incorrect value"
                         },
-                        "errors": {
-                          "type": "array",
-                          "items": {
-                            "properties": {
-                              "error": {
-                                "enum": ["ClientFailure", "RepoFailure", "NotFound"]
-                              },
-                              "message": {
-                                "type": "string"
-                              }
-                            },
-                            "required": ["error"]
-                          }
-                        },
-                        "attempts": {
-                          "description": "Number of attempts this repository has been queried",
-                          "type": "integer",
-                          "minimum": 0
-                        },
-                        "lastAttempt": {
+                        "expectedType": { 
                           "type": "string",
-                          "format": "date-time"
+                          "description": "Expected type"
                         }
                       },
-                      "required": ["repository", "errors", "attempts", "lastAttempt"],
+                      "required": ["value", "expectedType"],
                       "additionalProperties": false
                     }
-                  }
-                },
-                "required": ["error", "lookupHistory"],
-                "additionalProperties": false
-              },
-              {
-                "description": "Data is invalid against its schema",
-                "properties": {
-                  "error": {
-                      "enum": ["ValidationError"]
                   },
-                  "dataReports": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
+                  "required": ["wrongType"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "description": "Field should be repeatable, but value is not an JSON Array",
+                  "properties": {
+                    "notAnArray": {
                       "type": "object",
-                      "description": "List of reports",
                       "properties": {
-                        "message": {
-                          "description": "Human-readable error message",
-                          "type": "string"
+                        "value": { 
+                          "type": "object",
+                          "description": "Incorrect value"
                         },
-                        "path": {
-                          "description": "JSON Path to problematic property in instance",
-                          "type": ["string", "null"]
-                        },
-                        "keyword": {
-                          "description": "JSON Schema keyword caused this report",
-                          "type": ["string", "null"]
-                        },
-                        "targets": {
-                          "description": "List of properties affected in instance",
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
+                        "expectedType": { 
+                          "type": "string",
+                          "description": "Expected type"
                         }
                       },
-                      "required": ["message", "path", "keyword", "targets"],
+                      "required": ["value", "expectedType"],
                       "additionalProperties": false
                     }
-                  }
+                  },
+                  "required": ["notAnArray"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "description": "Value is required by Schema, but missing in JSON object",
+                  "properties": {
+                    "missingInValue": {
+                      "type": "object",
+                      "properties": {
+                        "value": { 
+                          "type": "object",
+                          "description": "Incorrect value"
+                        },
+                        "missingKey": { 
+                          "type": "string",
+                          "description": "Missing key in JSON object"
+                        }
+                      },
+                      "required": ["value", "missingKey"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["missingInValue"],
+                  "additionalProperties": false
                 }
-              }
-            ]
+              ]
+            }
           }
         },
-        "required": ["schema", "error"],
+        "required": ["data", "schemaKey", "errors"],
         "additionalProperties": false
       }
     },
@@ -622,6 +611,6 @@
       "additionalProperties": false
     }
   },
-  "required": ["failure", "payload"],
+  "required": ["failure", "payload", "processor"],
   "additionalProperties": false
 }
