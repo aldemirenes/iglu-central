@@ -9,7 +9,7 @@
   },
   "type": "object",
   "properties": {
-    "errors": {
+    "failure": {
       "type": "array",
       "description": "List of errors taken during a validation or schema lookup with Iglu",
       "items": {
@@ -117,7 +117,7 @@
         "additionalProperties": false
       }
     },
-    "event": {
+    "payload": {
       "type": "object",
       "description": "The enriched event that resulted in a storage loader failure",
       "properties": {
@@ -622,6 +622,6 @@
       "additionalProperties": false
     }
   },
-  "required": ["errors", "event"],
+  "required": ["failure", "payload"],
   "additionalProperties": false
 }

@@ -13,7 +13,7 @@
       "type": "string",
       "description": "Data blob which was not recognized as an enriched event by the storage loader"
     },
-    "errors": {
+    "failure": {
       "type": "array",
       "description": "Errors that happened when not recognizing the event as an enriched event",
       "items": {
@@ -40,6 +40,6 @@
       "additionalProperties": false
     }
   },
-  "required": ["payload", "errors", "processor"],
+  "required": ["payload", "failure", "processor"],
   "additionalProperties": false
 }

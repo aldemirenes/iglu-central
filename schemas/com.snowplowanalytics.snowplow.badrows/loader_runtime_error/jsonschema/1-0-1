@@ -9,7 +9,7 @@
     },
     "type": "object",
     "properties": {
-      "event": {
+      "payload": {
         "type": "object",
         "description": "The enriched event that resulted in a storage loader failure",
         "properties": {
@@ -494,7 +494,7 @@
         },
         "additionalProperties": false
       },
-      "error": {
+      "failure": {
         "type": "string",
         "description": "Error message, either human-readable or stacktrace"
       },
@@ -518,7 +518,7 @@
         "additionalProperties": false
       }
     },
-    "required": ["event", "error"],
+    "required": ["payload", "failure"],
     "additionalProperties": false
 }
 
